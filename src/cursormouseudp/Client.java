@@ -5,40 +5,119 @@
  */
 package cursormouseudp;
 
-import java.awt.MouseInfo;
-import java.awt.Point;
-import java.awt.PointerInfo;
+import java.awt.*;
+import java.awt.event.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import javax.swing.*;
 
 /**
  *
  * @author ASUS
  */
-public class Client {
+class Client extends Frame implements MouseListener {
+
+    static JLabel lbl1, lbl2, lbl3, lbl4;
+    static boolean clicked = false;
+
+    Client() {
+    }
+
     public static void main(String[] args) {
+        JFrame jf = new JFrame("MouseListener");
+
+        jf.setSize(1000, 1000);
+
+        jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        JPanel jp = new JPanel();
+
+        jp.setLayout(new FlowLayout());
+
+        lbl1 = new JLabel("no event  ");
+
+        lbl2 = new JLabel("no event  ");
+
+        lbl3 = new JLabel("no event  ");
+
+        lbl4 = new JLabel("no event  ");
+
+        Client pm = new Client();
+
+        jf.addMouseListener(pm);
+
+        jp.add(lbl1);
+        jp.add(lbl2);
+        jp.add(lbl3);
+        jp.add(lbl4);
+
+        jf.add(jp);
+
+        jf.show();
+
         try {
-            InetAddress alamat=InetAddress.getByName("10.10.100.19");
-            int port=2255;
-            PointerInfo a;
-            Point bb;
-            for(;;){
-                a= MouseInfo.getPointerInfo();
-                bb = a.getLocation();
-                int x = (int) bb.getX();
-                int y = (int) bb.getY();
-                String xx=String.valueOf(x);
-                String yy=String.valueOf(y);
-                String pesan=xx+"|"+yy+"|";
-                byte[] b=pesan.getBytes();
-                DatagramPacket dp=new DatagramPacket(b,b.length,alamat, port);
-                DatagramSocket ds=new DatagramSocket();
+
+            PointerInfo pi;
+            Point p;
+            int x, y;
+            InetAddress ia = InetAddress.getByName("10.10.100.19");
+            String message = "";
+            while (true) {
+                pi = MouseInfo.getPointerInfo();
+                p = pi.getLocation();
+                x = (int) p.getX();
+                y = (int) p.getX();
+                if (clicked) {
+                    message = String.valueOf(x) + "|" + String.valueOf(y) + "|clicked";
+                    clicked = false;
+                } else {
+                    message = String.valueOf(x) + "|" + String.valueOf(y) + "|notClicked";
+                }
+                byte[] data = message.getBytes();
+                DatagramPacket dp = new DatagramPacket(data, data.length, ia, 1234);
+                DatagramSocket ds = new DatagramSocket();
+                Thread.sleep(100);
                 ds.send(dp);
-                System.out.println(pesan);
+                System.out.println(message);
+                lbl4.setText("Mouse Position : X = " + x + " | Y = " + y);
             }
         } catch (Exception e) {
+            System.out.println(e);
         }
+
     }
-    
+
+    public void mousePressed(MouseEvent e) {
+
+        lbl1.setText("mouse pressed at:"
+                + e.getX() + " " + e.getY());
+        clicked = true;
+
+    }
+
+    public void mouseReleased(MouseEvent e) {
+
+        lbl1.setText("mouse released at:"
+                + e.getX() + " " + e.getY());
+    }
+
+    public void mouseExited(MouseEvent e) {
+
+        lbl2.setText("mouse exited through:"
+                + e.getX() + " " + e.getY());
+    }
+
+    public void mouseEntered(MouseEvent e) {
+
+        lbl2.setText("mouse entered at:"
+                + e.getX() + " " + e.getY());
+    }
+
+    public void mouseClicked(MouseEvent e) {
+        lbl3.setText("mouse clicked at:"
+                + e.getX() + " "
+                + e.getY() + "mouse clicked :" + e.getClickCount());
+
+    }
 }
